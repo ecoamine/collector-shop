@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/collector_shop
+    username: collector_shop
+    password: collector_shop
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
