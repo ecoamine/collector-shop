@@ -1,5 +1,5 @@
 com\collectorshop\controller\ItemApiIntegrationTest.class
-com\collectorshop\service\CategoryServiceTest.class
-com\collectorshop\service\ItemServiceTest.class
 com\collectorshop\config\BasePostgresContainerTest.class
 com\collectorshop\repository\ItemListingRepositoryIT.class
+com\collectorshop\service\CategoryServiceTest.class
+com\collectorshop\service\ItemServiceTest.class
