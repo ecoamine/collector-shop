@@ -15,6 +15,10 @@ public abstract class BasePostgresContainerTest {
                     .withUsername("collector_shop")
                     .withPassword("collector_shop");
 
+    static {
+        POSTGRES.start();
+    }
+
     @DynamicPropertySource
     static void registerDataSourceProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
