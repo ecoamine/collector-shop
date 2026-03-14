@@ -78,7 +78,7 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center" data-testid="catalog-list">
         <p className="text-danger font-medium">{error}</p>
       </div>
     );
