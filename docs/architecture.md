@@ -33,3 +33,85 @@ This document describes the high-level architecture of the Collector Shop applic
 4. Security is enforced via JWT-based authentication and role-based authorization (BUYER, SELLER, ADMIN).
 
 
+## System architecture overview
+
+The Collector Shop application follows a three-tier web architecture composed of:
+
+- a React frontend responsible for user interaction
+- a Spring Boot backend exposing REST APIs
+- a PostgreSQL database for persistence
+- a containerized runtime environment using Docker Compose
+- a CI pipeline using GitHub Actions
+
+This architecture ensures separation of concerns, scalability and ease of deployment.
+
+---
+
+## Main application flows
+
+### Public catalog browsing
+User → React frontend → Spring Boot API → PostgreSQL
+
+### Authentication
+User → Login form → API → JWT generation → secured API access
+
+### Item publication
+Seller → React frontend → secured REST endpoint → persistence in PostgreSQL
+
+### Category management
+Admin → secured frontend route → secured backend endpoint → database update
+
+---
+
+## Security architecture
+
+Security is integrated at multiple levels:
+
+- JWT authentication mechanism
+- role-based authorization (BUYER, SELLER, ADMIN)
+- protected API endpoints
+- input validation using Bean Validation
+- container isolation using Docker
+- health monitoring via Spring Boot Actuator
+
+Future improvements include:
+- HTTPS termination via reverse proxy
+- vulnerability scanning in CI pipeline
+- rate limiting and API gateway integration
+
+---
+
+## Deployment architecture
+
+The application is deployed locally using Docker Compose:
+
+- PostgreSQL container
+- Spring Boot backend container
+- React frontend container
+
+This setup provides:
+
+- reproducible environment
+- simplified demonstration setup
+- preparation for orchestration with Kubernetes
+
+---
+
+## Observability
+
+Basic observability is ensured through:
+
+- Spring Boot Actuator health endpoint
+- application logs
+- future integration with metrics and monitoring tools
+
+---
+
+## Architectural rationale
+
+This architecture was chosen to:
+
+- ensure modularity and maintainability
+- allow rapid prototyping
+- support future scalability
+- align with modern DevOps practices
