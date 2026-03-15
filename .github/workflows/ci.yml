@@ -111,22 +111,34 @@ jobs:
           echo "Frontend not ready"
           exit 1
 
-      - name: Wait for backend DB migrations (Flyway)
-        run: sleep 10
+      - name: Wait for backend DB migrations and seed data
+        run: |
+          for i in {1..24}; do
+            items=$(curl -k -s https://localhost/api/items 2>/dev/null || echo "[]")
+            if echo "$items" | grep -q '"id"'; then
+              echo "Seed data ready (catalog has items)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Seed data not ready (catalog empty)"
+          exit 1
 
       - name: Verify E2E login (seed users)
         run: |
-          resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
-            -H "Content-Type: application/json" \
-            -d '{"username":"seller","password":"password"}')
-          code=$(echo "$resp" | tail -n1)
-          body=$(echo "$resp" | sed '$d')
-          if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
-            echo "E2E login OK (seller/password)"
-          else
-            echo "E2E login failed (code=$code). Body: $body"
-            exit 1
-          fi
+          for user in seller admin; do
+            resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
+              -H "Content-Type: application/json" \
+              -d "{\"username\":\"$user\",\"password\":\"password\"}")
+            code=$(echo "$resp" | tail -n1)
+            body=$(echo "$resp" | sed '$d')
+            if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
+              echo "E2E login OK ($user/password)"
+            else
+              echo "E2E login failed for $user (code=$code). Body: $body"
+              exit 1
+            fi
+          done
 
       - name: Install Playwright browsers
         working-directory: frontend
