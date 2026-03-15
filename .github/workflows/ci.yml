@@ -85,7 +85,9 @@ jobs:
 
       - name: Start stack
         working-directory: infra/compose
-        run: docker compose up -d --build
+        run: |
+          docker compose build --no-cache backend
+          docker compose up -d
 
       - name: Wait backend health
         run: |
@@ -98,6 +100,19 @@ jobs:
           done
           echo "Backend not ready"
           exit 1
+
+      - name: Diagnose DB (Flyway + seed)
+        working-directory: infra/compose
+        run: |
+          echo "=== Flyway schema history ==="
+          docker compose exec -T db psql -U collector_shop -d collector_shop -t -A -c "SELECT installed_rank, version, description FROM flyway_schema_history ORDER BY installed_rank;" 2>/dev/null || echo "flyway_schema_history not found or error"
+          echo "=== Users count and list ==="
+          docker compose exec -T db psql -U collector_shop -d collector_shop -t -A -c "SELECT count(*) FROM users;" 2>/dev/null || echo "users table error"
+          docker compose exec -T db psql -U collector_shop -d collector_shop -t -A -c "SELECT username, role FROM users;" 2>/dev/null || true
+          echo "=== Categories count ==="
+          docker compose exec -T db psql -U collector_shop -d collector_shop -t -A -c "SELECT count(*) FROM categories;" 2>/dev/null || echo "categories table error"
+          echo "=== Item listings count ==="
+          docker compose exec -T db psql -U collector_shop -d collector_shop -t -A -c "SELECT count(*) FROM item_listings;" 2>/dev/null || echo "item_listings table error"
 
       - name: Wait frontend
         run: |

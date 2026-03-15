@@ -4,6 +4,9 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db:5432/collector_shop}
     username: ${SPRING_DATASOURCE_USERNAME:collector_shop}
     password: ${SPRING_DATASOURCE_PASSWORD:collector_shop}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 server:
   port: 8080
