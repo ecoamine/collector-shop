@@ -19,7 +19,7 @@ export default function ItemDetails() {
       try {
         const response = await api.get(`/api/items/${id}`);
         if (!cancelled) setItem(response.data);
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load item');
       } finally {
         if (!cancelled) setLoading(false);

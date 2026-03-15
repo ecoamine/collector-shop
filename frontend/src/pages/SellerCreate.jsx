@@ -36,7 +36,7 @@ export default function SellerCreate() {
       setCategoryId('');
       setDescription('');
       setImageUrl('');
-    } catch (e) {
+    } catch {
       toast.error('Failed to create item');
     } finally {
       setLoading(false);
