@@ -1,0 +1,12 @@
+# Override CI : expose backend et frontend sur l'hôte pour les health checks et E2E.
+# Utilisé avec : docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+
+version: "3.8"
+
+services:
+  backend:
+    ports:
+      - "8080:8080"
+  frontend:
+    ports:
+      - "5173:80"

@@ -76,9 +76,16 @@ jobs:
       - name: Setup Docker
         uses: docker/setup-buildx-action@v3
 
+      - name: Generate Nginx TLS cert (CI)
+        run: |
+          mkdir -p infra/nginx/certs
+          openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
+            -keyout infra/nginx/certs/key.pem -out infra/nginx/certs/cert.pem \
+            -subj "/CN=localhost"
+
       - name: Start stack
         working-directory: infra/compose
-        run: docker compose up -d --build
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
 
       - name: Wait backend health
         run: |
@@ -118,7 +125,7 @@ jobs:
       - name: Stop stack
         if: always()
         working-directory: infra/compose
-        run: docker compose down -v
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
 
   docker-build:
     name: Docker production-like build
@@ -132,9 +139,16 @@ jobs:
       - name: Setup Docker
         uses: docker/setup-buildx-action@v3
 
+      - name: Generate Nginx TLS cert (CI)
+        run: |
+          mkdir -p infra/nginx/certs
+          openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
+            -keyout infra/nginx/certs/key.pem -out infra/nginx/certs/cert.pem \
+            -subj "/CN=localhost"
+
       - name: Build stack
         working-directory: infra/compose
-        run: docker compose up -d --build
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
 
       - name: Trivy scan (backend image)
         run: |
@@ -167,7 +181,7 @@ jobs:
       - name: Stop stack
         if: always()
         working-directory: infra/compose
-        run: docker compose down -v
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
 
   sonar:
     name: SonarQube Cloud analysis
