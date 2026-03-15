@@ -46,6 +46,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
 
         <!-- Database and migrations -->
     <dependency>
@@ -161,10 +165,11 @@
                 </executions>
             </plugin>
             <!-- OWASP Dependency Check : scan des vulnérabilités connues sur les dépendances -->
+            <!-- 12.1.x requis pour compatibilité NVD (valeur SAFETY en CVSS v4) -->
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>10.0.4</version>
+                <version>12.1.3</version>
                 <executions>
                     <execution>
                         <id>dependency-check</id>

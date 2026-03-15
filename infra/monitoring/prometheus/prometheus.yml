@@ -1,0 +1,14 @@
+# Prometheus – config minimale pour démo (backend Spring Boot)
+# Scrape des métriques exposées par Actuator / Micrometer
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "backend"
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8080"]
+        labels:
+          application: "collector-shop-backend"

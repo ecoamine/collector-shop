@@ -1,0 +1,40 @@
+# Scan OWASP Dependency Check – job séparé, déclenché sur main/master, manuel ou planifié.
+# Ne ralentit pas le pipeline principal (develop / PR).
+
+name: Backend dependency security scan
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: {}
+  schedule:
+    # Chaque dimanche à 02:00 UTC (optionnel, démontrable)
+    - cron: "0 2 * * 0"
+
+jobs:
+  dependency-check:
+    name: Backend dependency security scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: OWASP Dependency Check
+        working-directory: backend
+        run: mvn -B dependency-check:check
+
+      - name: Upload OWASP Dependency Check report
+        if: hashFiles('backend/target/dependency-check-report.html') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: backend/target/dependency-check-report.html

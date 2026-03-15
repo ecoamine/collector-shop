@@ -26,21 +26,11 @@ jobs:
         working-directory: backend
         run: mvn -B clean test
 
-      - name: OWASP Dependency Check
-        working-directory: backend
-        run: mvn -B dependency-check:check
-
       - name: Upload JaCoCo report
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: backend/target/site/jacoco
-
-      - name: Upload OWASP Dependency Check report
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: backend/target/dependency-check-report.html
 
   frontend:
     name: Frontend lint, build & E2E

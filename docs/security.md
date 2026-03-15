@@ -35,8 +35,8 @@ This document outlines the security considerations and controls for the Collecto
 
 ## Dependency scan
 
-- **Backend (Maven)** : scan automatique en CI avec **OWASP Dependency Check**. Rapport HTML/XML publié en artifact.
-- **Frontend (npm)** : scan automatique en CI avec **npm audit**. Rapport texte publié en artifact pour analyse des vulnérabilités connues (CVE).
+- **Backend (Maven)** : scan **OWASP Dependency Check** dans un workflow GitHub Actions dédié (`.github/workflows/dependency-check.yml`), déclenché sur push `main`/`master`, exécution manuelle ou planifiée. Rapport HTML publié en artifact. Ce scan est volontairement séparé du pipeline principal pour garder la CI rapide et stable ; le rapport reste disponible pour la soutenance et l’audit.
+- **Frontend (npm)** : scan automatique en CI avec **npm audit** dans le pipeline principal. Rapport texte publié en artifact pour analyse des vulnérabilités connues (CVE).
 - **Images Docker** : scan automatique en CI avec **Trivy** sur les images backend et frontend construites par le pipeline. Rapports (tableau) publiés en artifact.
 
 ## Other controls

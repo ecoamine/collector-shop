@@ -87,7 +87,7 @@ npm run test:e2e
 
 The pipeline (`.github/workflows/ci.yml`) runs on push/PR to `main`:
 
-- **backend**: Java 21, Maven cache, `mvn -B test`, puis `mvn dependency-check:check` ; rapports JaCoCo et OWASP Dependency Check en artifacts.
+- **backend**: Java 21, Maven cache, `mvn -B test` ; rapport JaCoCo en artifact. OWASP Dependency Check est dans un workflow séparé (push main/master, manuel ou planifié).
 - **frontend**: Node 22, npm cache, `npm ci`, `npm audit` (rapport en artifact), `npm run build`, then `docker compose up --build`, wait for health, `npm run test:e2e` (Playwright).
 - **docker-build**: Builds images, Trivy scan (backend + frontend images), smoke tests (curl backend health and frontend), upload Trivy reports as artifact, tears down.
 
