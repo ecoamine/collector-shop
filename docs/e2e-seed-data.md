@@ -1,52 +1,58 @@
-# Données de seed E2E (Collector.shop)
+# Données E2E – Collector.shop
 
-Données créées par Flyway pour les tests end-to-end et la démo locale. Garanties après chaque `docker compose up --build` (migrations V1 à V5).
+Données de seed créées par Flyway (V1–V5) pour les tests Playwright et la démo. Garanties après chaque `docker compose up --build`.
 
-## Utilisateurs de test
+## Identifiants E2E exacts
 
-| Username | Password | Rôle   | Usage E2E |
-|----------|----------|--------|------------|
-| **seller** | `password` | SELLER | Connexion, création d’annonce (auth-seller.spec.js) |
-| **buyer**  | `password` | BUYER  | Connexion, accès refusé à /admin (admin-access.spec.js) |
-| **admin**  | `password` | ADMIN  | Connexion, gestion des catégories (vérification CI) |
+| Username | Password | Rôle   |
+|----------|----------|--------|
+| **seller** | `password` | SELLER |
+| **buyer**  | `password` | BUYER  |
+| **admin**  | `password` | ADMIN  |
 
-Hash BCrypt (strength 10) utilisé : vérifié par `E2ESeedPasswordTest` dans le backend.
+Hash BCrypt (strength 10) : `$2a$10$6Gom9nVqetRlkyEFh2FlfOr2DYVzoki5LOlTNcqN5k5uuHJgFzBNC` (vérifié par `E2ESeedPasswordTest`).
 
-## Catégories
+## Données garanties
 
-Créées en V1 : **Cards**, **Figures**, **Comics** (ids 1, 2, 3).
+- **Catégories** (V1) : Cards, Figures, Comics (ids 1, 2, 3).
+- **Items** (V1 + V2) : au moins un item (Sample Item + 3 autres).
+- **Utilisateurs** (V3 + V5) : seller, buyer, admin avec mot de passe `password` (V4/V5 assurent le bon hash).
 
-## Items (catalogue)
+## Commandes de validation locale
 
-- V1 : 1 item « Sample Item » (catégorie Cards, seller_id=1).
-- V2 : 3 items supplémentaires (Vintage Trading Card, Action Figure, Classic Comic).
+```bash
+# 1. Démarrer la stack
+cd infra/compose && docker compose up -d --build
+# Attendre ~30 s
 
-Au moins un item est toujours présent après migrations ; le catalogue E2E (`catalog.spec.js`) et le formulaire vendeur (sélection `categoryId` 1) en dépendent.
+# 2. Health backend
+curl -k -s https://localhost/actuator/health
+# Attendu : "status":"UP"
 
-## Points de validation manuelle
+# 3. Catalogue (au moins un item)
+curl -k -s https://localhost/api/items
+# Attendu : JSON avec au moins un objet contenant "id"
 
-1. **Stack démarrée**  
-   `cd infra/compose && docker compose up -d --build` puis attendre ~30 s.
+# 4. Login seller
+curl -k -s -X POST https://localhost/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"seller","password":"password"}'
+# Attendu : {"token":"..."}
 
-2. **Backend et seed**  
-   - Health : `curl -k -s https://localhost/actuator/health` → `"status":"UP"`.
-   - Catalogue : `curl -k -s https://localhost/api/items` → JSON avec au moins un objet contenant `"id"`.
-   - Login seller :  
-     `curl -k -s -X POST https://localhost/api/auth/login -H "Content-Type: application/json" -d '{"username":"seller","password":"password"}'`  
-     → réponse avec `"token"`.
-   - Login admin : idem avec `"username":"admin"`.
+# 5. Login admin
+curl -k -s -X POST https://localhost/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password"}'
+# Attendu : {"token":"..."}
 
-3. **E2E Playwright**  
-   Depuis `frontend/` :  
-   `PLAYWRIGHT_BASE_URL=https://localhost NODE_TLS_REJECT_UNAUTHORIZED=0 npm run test:e2e`  
-   (certificat auto-signé : accepter ou utiliser `ignoreHTTPSErrors` en CI.)
+# 6. E2E Playwright (depuis frontend/)
+PLAYWRIGHT_BASE_URL=https://localhost NODE_TLS_REJECT_UNAUTHORIZED=0 npm run test:e2e
+```
 
-## Migrations concernées
+## Migrations
 
-- **V1** : schéma, catégories, premier item (seller_id=1).
-- **V2** : images et items supplémentaires.
-- **V3** : utilisateurs seller, buyer (seed initial).
-- **V4** : mise à jour du mot de passe pour seller, buyer, admin.
-- **V5** : garantie des trois utilisateurs E2E (upsert seller, buyer, admin avec mot de passe `password`).
-
-En CI, le job frontend attend que le catalogue renvoie au moins un item et vérifie le login seller et admin avant de lancer Playwright.
+- **V1** : schéma, catégories, 1 item (seller_id=1).
+- **V2** : images + 3 items.
+- **V3** : users seller, buyer.
+- **V4** : UPDATE password pour seller, buyer, admin.
+- **V5** : INSERT … ON CONFLICT DO UPDATE pour seller, buyer, admin (garantie idempotente).

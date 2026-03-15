@@ -89,7 +89,7 @@ jobs:
 
       - name: Wait backend health
         run: |
-          for i in {1..30}; do
+          for i in $(seq 1 30); do
             if curl -k -sf https://localhost/actuator/health; then
               echo "Backend ready"
               exit 0
@@ -101,7 +101,7 @@ jobs:
 
       - name: Wait frontend
         run: |
-          for i in {1..20}; do
+          for i in $(seq 1 20); do
             if curl -k -sf https://localhost/; then
               echo "Frontend ready"
               exit 0
@@ -111,34 +111,49 @@ jobs:
           echo "Frontend not ready"
           exit 1
 
-      - name: Wait for backend DB migrations and seed data
+      - name: Wait for catalog (at least one item)
         run: |
-          for i in {1..24}; do
-            items=$(curl -k -s https://localhost/api/items 2>/dev/null || echo "[]")
+          echo "Waiting for backend seed data (catalog with at least one item)..."
+          for i in $(seq 1 30); do
+            items=$(curl -k -s --connect-timeout 5 https://localhost/api/items 2>/dev/null || true)
             if echo "$items" | grep -q '"id"'; then
-              echo "Seed data ready (catalog has items)"
+              echo "Catalog ready (at least one item)."
               exit 0
             fi
+            echo "Attempt $i/30: catalog empty or unreachable, retrying in 5s..."
             sleep 5
           done
-          echo "Seed data not ready (catalog empty)"
+          echo "FAIL: Catalog still empty after 30 attempts. Last response:"
+          echo "$(curl -k -s -w '\nHTTP_CODE:%{http_code}' https://localhost/api/items 2>/dev/null || echo 'curl failed')"
           exit 1
 
-      - name: Verify E2E login (seed users)
+      - name: Verify E2E login (seller)
         run: |
-          for user in seller admin; do
-            resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
-              -H "Content-Type: application/json" \
-              -d "{\"username\":\"$user\",\"password\":\"password\"}")
-            code=$(echo "$resp" | tail -n1)
-            body=$(echo "$resp" | sed '$d')
-            if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
-              echo "E2E login OK ($user/password)"
-            else
-              echo "E2E login failed for $user (code=$code). Body: $body"
-              exit 1
-            fi
-          done
+          resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"seller","password":"password"}')
+          code=$(echo "$resp" | tail -n1)
+          body=$(echo "$resp" | sed '$d')
+          if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
+            echo "E2E login OK (seller / password)"
+          else
+            echo "FAIL: Seller login failed. HTTP $code. Body: $body"
+            exit 1
+          fi
+
+      - name: Verify E2E login (admin)
+        run: |
+          resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"admin","password":"password"}')
+          code=$(echo "$resp" | tail -n1)
+          body=$(echo "$resp" | sed '$d')
+          if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
+            echo "E2E login OK (admin / password)"
+          else
+            echo "FAIL: Admin login failed. HTTP $code. Body: $body"
+            exit 1
+          fi
 
       - name: Install Playwright browsers
         working-directory: frontend
