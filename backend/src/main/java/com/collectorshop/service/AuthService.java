@@ -28,12 +28,11 @@ public class AuthService {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        Role role = request.getRole() != null ? request.getRole() : Role.BUYER;
-
+        // Rôle forcé côté backend pour éviter l'injection de rôle à l'inscription
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(role)
+                .role(Role.BUYER)
                 .build();
 
         userRepository.save(user);

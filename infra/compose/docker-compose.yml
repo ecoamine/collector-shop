@@ -23,11 +23,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/collector_shop
       SPRING_DATASOURCE_USERNAME: collector_shop
       SPRING_DATASOURCE_PASSWORD: collector_shop
+      # Sécurité : à surcharger en prod (secrets / env)
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key-for-prod-32-bytes-minimum-1234}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
+      APP_CORS_ALLOWED_ORIGIN: ${APP_CORS_ALLOWED_ORIGIN:-https://localhost}
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
@@ -38,15 +42,35 @@ services:
     build:
       context: ../../frontend
       args:
-        VITE_API_URL: http://localhost:8080
+        # Vide = requêtes API en relatif (même origine que le proxy Nginx)
+        VITE_API_URL: ""
     depends_on:
       backend:
         condition: service_healthy
-    ports:
-      - "5173:80"
+    expose:
+      - "80"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 5
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 

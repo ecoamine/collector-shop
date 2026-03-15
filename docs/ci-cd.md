@@ -66,11 +66,14 @@ Le job backend s’exécute sur `ubuntu-latest`.
 1. récupération du code source
 2. installation de Java 21 avec cache Maven
 3. exécution des tests backend avec `mvn test`
+4. scan des dépendances avec OWASP Dependency Check (`mvn dependency-check:check`)
+5. upload des rapports (JaCoCo, rapport OWASP en artifact)
 
 Résultat attendu :
 - le backend compile
 - les tests unitaires passent
 - la qualité minimale du socle applicatif est validée
+- le rapport de vulnérabilités des dépendances est disponible en artifact
 
 ### Job frontend
 
@@ -80,17 +83,19 @@ Le job frontend dépend du job backend.
 1. récupération du code source
 2. installation de Node.js
 3. installation des dépendances NPM
-4. build du frontend avec `npm run build`
-5. démarrage de la stack applicative avec Docker Compose
-6. attente de disponibilité du backend via `/actuator/health`
-7. installation des navigateurs Playwright
-8. exécution des tests end-to-end
-9. arrêt de la stack Docker Compose
+4. scan des dépendances avec `npm audit` (rapport en artifact)
+5. build du frontend avec `npm run build`
+6. démarrage de la stack applicative avec Docker Compose
+7. attente de disponibilité du backend via `/actuator/health`
+8. installation des navigateurs Playwright
+9. exécution des tests end-to-end
+10. arrêt de la stack Docker Compose
 
 Résultat attendu :
 - le frontend compile
 - l’application fonctionne dans un environnement proche de l’exécution réelle
 - les scénarios métier E2E passent
+- le rapport npm audit des dépendances est disponible en artifact
 
 ### Règle de validation
 
@@ -108,7 +113,8 @@ La sécurité est intégrée dans la démarche DevSecOps selon les principes sui
 - authentification et autorisation gérées côté backend
 - contrôle des accès selon les rôles
 - validation automatique du comportement applicatif par les tests
-- scan des dépendances à intégrer au pipeline pour détecter les vulnérabilités connues
+- scan des dépendances backend (OWASP) et frontend (npm audit) en CI pour détecter les vulnérabilités connues
+- scan des images Docker (Trivy) en CI sur les images backend et frontend construites par le pipeline
 - exécution de l’application dans des conteneurs isolés
 
 ---
@@ -127,7 +133,5 @@ Le pipeline contribue au suivi des métriques définies dans `docs/quality-metri
 ## 5. Évolutions prévues
 
 À court terme, le pipeline peut être enrichi avec :
-- rapport de couverture JaCoCo
-- scan OWASP Dependency Check
 - build et publication des images Docker
 - déploiement automatisé vers un environnement de recette

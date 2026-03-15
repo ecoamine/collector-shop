@@ -3,9 +3,9 @@ spring:
     name: collector-shop
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/collector_shop
-    username: collector_shop
-    password: collector_shop
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/collector_shop}
+    username: ${SPRING_DATASOURCE_USERNAME:collector_shop}
+    password: ${SPRING_DATASOURCE_PASSWORD:collector_shop}
 
   jpa:
     hibernate:
@@ -15,9 +15,18 @@ spring:
       hibernate:
         format_sql: true
 
+# JWT : externaliser en prod via JWT_SECRET et JWT_EXPIRATION_MS
 jwt:
-  secret: "change-this-secret-key-for-prod-32-bytes-minimum-1234"
-  expiration-ms: 3600000
+  secret: ${JWT_SECRET:change-this-secret-key-for-prod-32-bytes-minimum-1234}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+
+# CORS : externaliser via APP_CORS_ALLOWED_ORIGIN
+app:
+  cors:
+    allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:5173}
+  # Base pour restreindre Swagger plus tard (ex: app.swagger.enabled: false en prod)
+  swagger:
+    enabled: ${APP_SWAGGER_ENABLED:true}
 
 server:
   port: 8080

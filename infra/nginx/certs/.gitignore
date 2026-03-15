@@ -1,0 +1,4 @@
+# Certificats auto-signés (générés localement, ne pas committer)
+*.pem
+!*.gitignore
+!.keep

@@ -33,6 +33,12 @@ This document outlines the security considerations and controls for the Collecto
   - JWT is stored in `localStorage` and attached to all Axios requests.
   - Simple route guards restrict access to seller and admin pages.
 
+## Dependency scan
+
+- **Backend (Maven)** : scan automatique en CI avec **OWASP Dependency Check**. Rapport HTML/XML publié en artifact.
+- **Frontend (npm)** : scan automatique en CI avec **npm audit**. Rapport texte publié en artifact pour analyse des vulnérabilités connues (CVE).
+- **Images Docker** : scan automatique en CI avec **Trivy** sur les images backend et frontend construites par le pipeline. Rapports (tableau) publiés en artifact.
+
 ## Other controls
 
 - **Input validation**:

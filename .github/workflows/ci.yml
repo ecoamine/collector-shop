@@ -26,11 +26,21 @@ jobs:
         working-directory: backend
         run: mvn -B clean test
 
+      - name: OWASP Dependency Check
+        working-directory: backend
+        run: mvn -B dependency-check:check
+
       - name: Upload JaCoCo report
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: backend/target/site/jacoco
+
+      - name: Upload OWASP Dependency Check report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: backend/target/dependency-check-report.html
 
   frontend:
     name: Frontend lint, build & E2E
@@ -51,6 +61,19 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: npm audit (dépendances frontend)
+        working-directory: frontend
+        continue-on-error: true
+        run: |
+          npm audit 2>&1 | tee npm-audit-report.txt
+          npm audit --json > npm-audit-report.json 2>&1 || true
+
+      - name: Upload npm audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: frontend/npm-audit-report.txt
 
       - name: Run ESLint
         working-directory: frontend
@@ -122,6 +145,24 @@ jobs:
       - name: Build stack
         working-directory: infra/compose
         run: docker compose up -d --build
+
+      - name: Trivy scan (backend image)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+            --exit-code 0 --format table compose-backend:latest 2>&1 | tee trivy-backend.txt
+
+      - name: Trivy scan (frontend image)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+            --exit-code 0 --format table compose-frontend:latest 2>&1 | tee trivy-frontend.txt
+
+      - name: Upload Trivy reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: |
+            trivy-backend.txt
+            trivy-frontend.txt
 
       - name: Smoke backend
         run: |
