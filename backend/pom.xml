@@ -181,6 +181,8 @@
                             <formats>HTML,XML</formats>
                             <!-- Ne pas faire échouer le build ; rapport uniquement (démo / soutenance) -->
                             <failBuildOnAnyVulnerability>false</failBuildOnAnyVulnerability>
+                            <!-- Désactiver OSS Index : en CI sans credentials → 401/429, fait échouer le scan. NVD reste actif. -->
+                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
                         </configuration>
                     </execution>
                 </executions>

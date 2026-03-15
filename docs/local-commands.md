@@ -27,12 +27,14 @@ cd frontend; npm ci; npm run build; npx playwright install --with-deps; npm run 
 
 Note: Backend integration tests use Testcontainers (PostgreSQL). If Docker is not running, those tests are skipped. Frontend E2E starts the dev server by default; for E2E against a running stack (e.g. Docker), set `PLAYWRIGHT_BASE_URL` and `CI=true` and do not start the dev server.
 
-**Scan des dépendances (OWASP Dependency Check) :**
+**Scan des dépendances (OWASP Dependency Check)**  
+À exécuter **depuis le dossier `backend`** (obligatoire : Maven doit voir le `pom.xml` et le plugin déclaré).
 ```bash
 cd backend
 mvn -B dependency-check:check
 ```
-Rapport généré : `backend/target/dependency-check-report.html` (et `dependency-check-report.xml`). Le premier run peut être long (téléchargement de la base NVD).
+Depuis la racine du repo : `mvn -f backend/pom.xml -B dependency-check:check`  
+Rapport généré : `backend/target/dependency-check-report.html` (et `dependency-check-report.xml`). Le premier run peut être long (téléchargement de la base NVD). OSS Index est désactivé dans le pom (scan NVD uniquement).
 
 **Scan des dépendances frontend (npm audit) :**
 ```bash
