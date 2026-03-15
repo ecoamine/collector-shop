@@ -111,6 +111,23 @@ jobs:
           echo "Frontend not ready"
           exit 1
 
+      - name: Wait for backend DB migrations (Flyway)
+        run: sleep 10
+
+      - name: Verify E2E login (seed users)
+        run: |
+          resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"seller","password":"password"}')
+          code=$(echo "$resp" | tail -n1)
+          body=$(echo "$resp" | sed '$d')
+          if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
+            echo "E2E login OK (seller/password)"
+          else
+            echo "E2E login failed (code=$code). Body: $body"
+            exit 1
+          fi
+
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps
