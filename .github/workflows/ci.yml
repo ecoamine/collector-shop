@@ -120,6 +120,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: https://localhost
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
         run: npm run test:e2e
 
       - name: Stop stack
