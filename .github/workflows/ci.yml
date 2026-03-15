@@ -85,12 +85,12 @@ jobs:
 
       - name: Start stack
         working-directory: infra/compose
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+        run: docker compose up -d --build
 
       - name: Wait backend health
         run: |
           for i in {1..30}; do
-            if curl -sf http://localhost:8080/actuator/health; then
+            if curl -k -sf https://localhost/actuator/health; then
               echo "Backend ready"
               exit 0
             fi
@@ -102,7 +102,7 @@ jobs:
       - name: Wait frontend
         run: |
           for i in {1..20}; do
-            if curl -sf http://localhost:5173; then
+            if curl -k -sf https://localhost/; then
               echo "Frontend ready"
               exit 0
             fi
@@ -119,13 +119,13 @@ jobs:
         working-directory: frontend
         env:
           CI: true
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
+          PLAYWRIGHT_BASE_URL: https://localhost
         run: npm run test:e2e
 
       - name: Stop stack
         if: always()
         working-directory: infra/compose
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
+        run: docker compose down -v
 
   docker-build:
     name: Docker production-like build
