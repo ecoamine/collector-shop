@@ -4,7 +4,6 @@ import { Search } from 'lucide-react';
 import api from '../services/apiClient.js';
 import { Card } from '../components/ui/Card.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
-import { Input } from '../components/ui/Input.jsx';
 import { CardSkeleton } from '../components/ui/Skeleton.jsx';
 
 export default function Home() {
@@ -28,7 +27,7 @@ export default function Home() {
           setItems(itemsRes.data || []);
           setCategories(categoriesRes.data || []);
         }
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load items');
       } finally {
         if (!cancelled) setLoading(false);

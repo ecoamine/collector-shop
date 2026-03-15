@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '../services/apiClient.js';
 import { useToast } from '../components/ui/Toast.jsx';
 import { Card, CardContent } from '../components/ui/Card.jsx';
@@ -15,21 +15,21 @@ export default function AdminCategories() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const { toast } = useToast();
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get('/api/categories');
       setCategories(response.data || []);
-    } catch (e) {
+    } catch {
       toast.error('Failed to load categories');
     } finally {
       setLoading(false);
     }
-  }
+  }, [toast]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   async function handleCreate(event) {
     event.preventDefault();
@@ -40,7 +40,7 @@ export default function AdminCategories() {
       setName('');
       await load();
       toast.success('Category created');
-    } catch (e) {
+    } catch {
       toast.error('Failed to create category');
     } finally {
       setCreating(false);
@@ -53,7 +53,7 @@ export default function AdminCategories() {
       await api.delete(`/api/admin/categories/${id}`);
       await load();
       toast.success('Category deleted');
-    } catch (e) {
+    } catch {
       toast.error('Failed to delete category');
     }
   }

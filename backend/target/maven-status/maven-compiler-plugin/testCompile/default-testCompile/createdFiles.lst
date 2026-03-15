@@ -2,4 +2,5 @@ com\collectorshop\controller\ItemApiIntegrationTest.class
 com\collectorshop\service\CategoryServiceTest.class
 com\collectorshop\service\ItemServiceTest.class
 com\collectorshop\config\BasePostgresContainerTest.class
+com\collectorshop\config\E2ESeedPasswordTest.class
 com\collectorshop\repository\ItemListingRepositoryIT.class

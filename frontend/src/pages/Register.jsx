@@ -30,7 +30,7 @@ export default function Register() {
       } else {
         setError('Registration failed');
       }
-    } catch (e) {
+    } catch {
       setError('Registration failed');
     } finally {
       setLoading(false);

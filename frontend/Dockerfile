@@ -1,13 +1,14 @@
+#Dockerfile Fronted
+
 # Stage 1: Build
 FROM node:22-alpine AS build
 WORKDIR /app
 
-# API URL for browser requests (use host-accessible URL when using Docker Compose)
 ARG VITE_API_URL=http://localhost:8080
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci --ignore-scripts; else npm install; fi
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 COPY . .
 RUN npm run build

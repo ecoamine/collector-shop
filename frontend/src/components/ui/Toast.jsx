@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Info, X } from 'lucide-react';
@@ -32,13 +32,14 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const toast = useCallback(
-    (message, type = 'info') => add(message, type),
+  const toastApi = useMemo(
+    () => ({
+      success: (message) => add(message, 'success'),
+      error: (message) => add(message, 'error'),
+      info: (message) => add(message, 'info'),
+    }),
     [add]
   );
-  toast.success = (message) => add(message, 'success');
-  toast.error = (message) => add(message, 'error');
-  toast.info = (message) => add(message, 'info');
 
   const portal = typeof document !== 'undefined' && (
     <div
@@ -77,7 +78,7 @@ export function ToastProvider({ children }) {
   );
 
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={{ toast: toastApi }}>
       {children}
       {typeof document !== 'undefined' && createPortal(portal, document.body)}
     </ToastContext.Provider>
