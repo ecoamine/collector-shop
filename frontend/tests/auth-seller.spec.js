@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { attachApiNetworkLogger } from './network-logger.js';
 
 test('login as SELLER and create listing', async ({ page }) => {
+  attachApiNetworkLogger(page);
   await page.goto('/');
 
   await page.getByRole('link', { name: 'Login' }).first().click();

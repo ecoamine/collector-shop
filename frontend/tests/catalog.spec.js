@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { attachApiNetworkLogger } from './network-logger.js';
 
 test('catalog loads and opens item details', async ({ page }) => {
+  attachApiNetworkLogger(page);
   await page.goto('/');
 
   await expect(page.getByText('Collectibles', { exact: false }).or(page.getByText('Catalog')).first()).toBeVisible();
