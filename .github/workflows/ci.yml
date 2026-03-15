@@ -141,6 +141,20 @@ jobs:
             exit 1
           fi
 
+      - name: Verify E2E login (buyer)
+        run: |
+          resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"buyer","password":"password"}')
+          code=$(echo "$resp" | tail -n1)
+          body=$(echo "$resp" | sed '$d')
+          if [ "$code" = "200" ] && echo "$body" | grep -q "token"; then
+            echo "E2E login OK (buyer / password)"
+          else
+            echo "FAIL: Buyer login failed. HTTP $code. Body: $body"
+            exit 1
+          fi
+
       - name: Verify E2E login (admin)
         run: |
           resp=$(curl -k -s -w "\n%{http_code}" -X POST https://localhost/api/auth/login \

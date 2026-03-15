@@ -1,0 +1,16 @@
+---
+description: E2E seed and categoryId — avoid breaking the seller test
+globs: frontend/tests/**/*.spec.js,backend/src/main/resources/db/migration/*.sql
+alwaysApply: false
+---
+
+# E2E seed et categoryId (test seller)
+
+Si le test dépend de `categoryId='1'`, vérifie si cet id est garanti.
+
+- **Si l’id n’est pas garanti** par le schéma/migrations, corrige proprement soit :
+  - en **garantissant une catégorie avec id=1** dans le seed (migration Flyway),
+  - soit en **rendant le test plus robuste** en sélectionnant une vraie option disponible (ex. première option du select, ou texte visible).
+- Privilégie la solution la plus simple et stable.
+
+En l’état du projet, les migrations V1 et V6 insèrent les catégories en premier (Cards, Figures, Comics) ; la première reçoit en général `id=1`. Le test seller qui fait `selectOption('1')` repose sur cette convention. Ne pas changer le test pour un autre id sans garantir cet id dans le seed, ou ne pas changer le seed sans vérifier l’impact sur le test.

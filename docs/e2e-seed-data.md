@@ -1,58 +1,58 @@
 # Données E2E – Collector.shop
 
-Données de seed créées par Flyway (V1–V5) pour les tests Playwright et la démo. Garanties après chaque `docker compose up --build`.
+Seed garanties par la migration Flyway **V6__e2e_demo_seed_idempotent.sql** (idempotent, base vide ou existante). Compatible `docker compose up --build` et CI.
 
-## Identifiants E2E exacts
+## Identifiants E2E finaux
 
-| Username | Password | Rôle   |
-|----------|----------|--------|
-| **seller** | `password` | SELLER |
-| **buyer**  | `password` | BUYER  |
-| **admin**  | `password` | ADMIN  |
+| Username | Password | Rôle   | Usage test |
+|----------|----------|--------|------------|
+| **seller** | `password` | SELLER | auth-seller.spec.js |
+| **buyer**  | `password` | BUYER  | admin-access.spec.js |
+| **admin**  | `password` | ADMIN  | (vérification CI) |
 
-Hash BCrypt (strength 10) : `$2a$10$6Gom9nVqetRlkyEFh2FlfOr2DYVzoki5LOlTNcqN5k5uuHJgFzBNC` (vérifié par `E2ESeedPasswordTest`).
+Hash BCrypt (strength 10) : `$2a$10$6Gom9nVqetRlkyEFh2FlfOr2DYVzoki5LOlTNcqN5k5uuHJgFzBNC` — aligné avec `E2ESeedPasswordTest` et `SecurityConfig` (BCryptPasswordEncoder).
 
-## Données garanties
+## Données garanties après V6
 
-- **Catégories** (V1) : Cards, Figures, Comics (ids 1, 2, 3).
-- **Items** (V1 + V2) : au moins un item (Sample Item + 3 autres).
-- **Utilisateurs** (V3 + V5) : seller, buyer, admin avec mot de passe `password` (V4/V5 assurent le bon hash).
+- **Users** : seller, buyer, admin avec mot de passe `password`.
+- **Catégories** : au moins Cards, Figures, Comics (ids 1, 2, 3) — formulaire seller `categoryId`.
+- **Catalogue** : au moins un item (V1 ou V6) — `catalog.spec.js` (item-title).
 
-## Commandes de validation locale
+## Commandes de validation locale exactes
 
 ```bash
-# 1. Démarrer la stack
+# 1. Stack
 cd infra/compose && docker compose up -d --build
 # Attendre ~30 s
 
-# 2. Health backend
+# 2. Health
 curl -k -s https://localhost/actuator/health
-# Attendu : "status":"UP"
 
-# 3. Catalogue (au moins un item)
+# 3. Catalogue (≥1 item)
 curl -k -s https://localhost/api/items
-# Attendu : JSON avec au moins un objet contenant "id"
 
 # 4. Login seller
 curl -k -s -X POST https://localhost/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"seller","password":"password"}'
-# Attendu : {"token":"..."}
 
-# 5. Login admin
+# 5. Login buyer
+curl -k -s -X POST https://localhost/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"buyer","password":"password"}'
+
+# 6. Login admin
 curl -k -s -X POST https://localhost/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"password"}'
-# Attendu : {"token":"..."}
 
-# 6. E2E Playwright (depuis frontend/)
+# 7. E2E Playwright (depuis frontend/)
 PLAYWRIGHT_BASE_URL=https://localhost NODE_TLS_REJECT_UNAUTHORIZED=0 npm run test:e2e
 ```
 
 ## Migrations
 
 - **V1** : schéma, catégories, 1 item (seller_id=1).
-- **V2** : images + 3 items.
-- **V3** : users seller, buyer.
-- **V4** : UPDATE password pour seller, buyer, admin.
-- **V5** : INSERT … ON CONFLICT DO UPDATE pour seller, buyer, admin (garantie idempotente).
+- **V2** : images + items supplémentaires.
+- **V3–V5** : users E2E (historique).
+- **V6** : seed E2E/demo idempotent — garantit users (seller, buyer, admin), catégories, et au moins un item si catalogue vide.
