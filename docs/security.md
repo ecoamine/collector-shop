@@ -42,8 +42,8 @@ This document outlines the security considerations and controls for the Collecto
 
 ## Stabilisation Dependency-Check CI (OSS Index)
 
-- **Cause racine** : le plugin `dependency-check-maven` active par défaut l’analyzer **Sonatype OSS Index**. En CI, sans credentials Sonatype, les appels à OSS Index renvoient **401 Unauthorized** puis **429 Too Many Requests**, ce qui fait échouer le goal `dependency-check:check`.
-- **Correction** : dans `backend/pom.xml`, configuration du plugin avec `<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>`. L’analyzer NVD reste actif ; le scan reste utile pour les CVE NVD.
+- **Cause racine** : le plugin `dependency-check-maven` active par défaut l’analyzer **Sonatype OSS Index**. En CI, sans credentials Sonatype, les appels à OSS Index renvoient **401 Unauthorized** puis **429 Too Many Requests**, ce qui fait échouer le goal `dependency-check:check`. De plus, `failOnError` par défaut à `true` fait échouer le build sur toute erreur externe (réseau, NVD).
+- **Correction** : dans `backend/pom.xml`, configuration du plugin : `<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>`, `<failOnError>false</failOnError>`, `<nvdValidForHours>168</nvdValidForHours>`. L’analyzer NVD reste actif ; le rapport HTML est conservé ; le build reste stable en CI ; durée réduite grâce au cache NVD 7 jours.
 - **Validation locale** : exécuter **depuis le dossier `backend`** (sinon Maven ne trouve pas le projet ni le plugin). Commande : `cd backend` puis `mvn -B dependency-check:check`. Depuis la racine : `mvn -f backend/pom.xml -B dependency-check:check`. Rapport : `backend/target/dependency-check-report.html`.
 - **À traiter plus tard** : remédiation des vulnérabilités éventuelles signalées par le rapport ; optionnel : clé API NVD (secret GitHub) pour de meilleurs taux en CI.
 

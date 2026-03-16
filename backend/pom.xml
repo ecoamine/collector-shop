@@ -179,10 +179,14 @@
                         </goals>
                         <configuration>
                             <formats>HTML,XML</formats>
-                            <!-- Ne pas faire échouer le build ; rapport uniquement (démo / soutenance) -->
+                            <!-- Ne pas faire échouer le build sur les vulnérabilités ; rapport uniquement (soutenance) -->
                             <failBuildOnAnyVulnerability>false</failBuildOnAnyVulnerability>
-                            <!-- Désactiver OSS Index : en CI sans credentials → 401/429, fait échouer le scan. NVD reste actif. -->
+                            <!-- Ne pas faire échouer sur erreurs externes (réseau, OSS Index, NVD) -->
+                            <failOnError>false</failOnError>
+                            <!-- Désactiver OSS Index : 401/429 en CI sans credentials → build instable -->
                             <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                            <!-- Cache NVD 7 jours : exécution plus rapide, moins d'appels NVD -->
+                            <nvdValidForHours>168</nvdValidForHours>
                         </configuration>
                     </execution>
                 </executions>

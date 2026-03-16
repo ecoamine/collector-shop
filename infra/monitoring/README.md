@@ -9,12 +9,14 @@ Stack minimale pour la soutenance : métriques backend Spring Boot exposées via
 
 ## Lancer la stack
 
-À la racine du projet (avec certificats Nginx déjà générés si vous utilisez HTTPS) :
+À partir de `infra/compose` (certificats Nginx déjà générés si HTTPS) :
 
 ```bash
 cd infra/compose
 docker compose up -d --build
 ```
+
+Tous les services (backend, prometheus, etc.) sont sur le réseau explicite `collector-shop-net` pour que Prometheus résolve le nom `backend`. Après modification du compose (réseau, services), faire `docker compose down` puis `docker compose up -d` pour recréer le réseau.
 
 ## URLs
 
@@ -35,6 +37,8 @@ docker compose up -d --build
 
 ## Validation
 
-- Backend expose : http://localhost:8080/actuator/prometheus (si backend exposé) ou via Nginx https://localhost/actuator/prometheus si proxy configuré pour actuator.
-- Prometheus scrape : http://localhost:9090/targets → backend doit être UP.
-- Grafana : datasource Prometheus testée (Settings > Data sources > Prometheus > Save & test).
+- **Actuator** (backend écoute en **HTTP** sur 8080 ; utiliser `http://` pas `https://` pour éviter « Invalid character found in method name ») :  
+  `curl -s http://localhost:8080/actuator/health` → JSON avec `"status":"UP"`.  
+  `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/prometheus` → attendu `200`.
+- **Prometheus targets** : http://localhost:9090/targets → job `backend` doit être **UP**.
+- **Grafana datasource** : http://localhost:3000 → Configuration → Data sources → Prometheus → **Save & test**.

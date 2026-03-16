@@ -28,7 +28,7 @@ jobs:
           java-version: 21
           cache: maven
 
-      # working-directory: backend requis pour que Maven trouve le pom et le plugin. OSS Index désactivé dans pom.xml.
+      # pom.xml : ossindexAnalyzerEnabled=false, failOnError=false, nvdValidForHours=168 (rapport HTML conservé, CI stable).
       - name: OWASP Dependency Check
         working-directory: backend
         run: mvn -B dependency-check:check
