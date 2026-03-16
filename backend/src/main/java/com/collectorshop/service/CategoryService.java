@@ -28,17 +28,22 @@ public class CategoryService {
 
     @Transactional
     public CategoryDto createCategory(CreateCategoryRequest request) {
-        categoryRepository.findByName(request.getName())
+        String name = request.getName() != null ? request.getName().trim() : "";
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Category name is required");
+        }
+        categoryRepository.findByName(name)
                 .ifPresent(existing -> {
                     throw new IllegalArgumentException("Category with this name already exists");
                 });
 
         Category category = Category.builder()
-                .name(request.getName())
+                .name(name)
                 .build();
 
         Category saved = categoryRepository.save(category);
-        return CategoryMapper.toDto(saved);
+        categoryRepository.flush();
+        return new CategoryDto(saved.getId(), name);
     }
 
     @Transactional

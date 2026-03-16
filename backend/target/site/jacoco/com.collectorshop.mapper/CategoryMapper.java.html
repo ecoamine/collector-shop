@@ -9,8 +9,8 @@ public final class CategoryMapper {
     }
 
     public static CategoryDto toDto(Category category) {
-<span class="pc bpc" id="L12" title="1 of 2 branches missed.">        if (category == null) {</span>
-<span class="nc" id="L13">            return null;</span>
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        if (category == null) {</span>
+<span class="fc" id="L13">            return null;</span>
         }
 <span class="fc" id="L15">        return new CategoryDto(category.getId(), category.getName());</span>
     }

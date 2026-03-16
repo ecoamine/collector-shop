@@ -20,50 +20,50 @@ public class JwtService {
     private final Key signingKey;
     private final long expirationMs;
 
-    public JwtService(@Value(&quot;${jwt.secret}&quot;) String secret,
-<span class="nc" id="L24">                      @Value(&quot;${jwt.expiration-ms}&quot;) long expirationMs) {</span>
-<span class="nc" id="L25">        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));</span>
-<span class="nc" id="L26">        this.expirationMs = expirationMs;</span>
-<span class="nc" id="L27">    }</span>
+<span class="fc" id="L23">    public JwtService(@Value(&quot;${jwt.secret}&quot;) String secret,</span>
+                      @Value(&quot;${jwt.expiration-ms}&quot;) long expirationMs) {
+<span class="fc" id="L25">        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));</span>
+<span class="fc" id="L26">        this.expirationMs = expirationMs;</span>
+<span class="fc" id="L27">    }</span>
 
     public String generateToken(String username, Role role) {
-<span class="nc" id="L30">        return buildToken(Map.of(&quot;role&quot;, role.name()), username);</span>
+<span class="fc" id="L30">        return buildToken(Map.of(&quot;role&quot;, role.name()), username);</span>
     }
 
     public String extractUsername(String token) {
-<span class="nc" id="L34">        return extractClaim(token, Claims::getSubject);</span>
+<span class="fc" id="L34">        return extractClaim(token, Claims::getSubject);</span>
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-<span class="nc" id="L38">        String username = extractUsername(token);</span>
-<span class="nc bnc" id="L39" title="All 4 branches missed.">        return username.equals(userDetails.getUsername()) &amp;&amp; !isTokenExpired(token);</span>
+<span class="fc" id="L38">        String username = extractUsername(token);</span>
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        return username.equals(userDetails.getUsername()) &amp;&amp; !isTokenExpired(token);</span>
     }
 
     private boolean isTokenExpired(String token) {
-<span class="nc" id="L43">        Date expiration = extractClaim(token, Claims::getExpiration);</span>
-<span class="nc" id="L44">        return expiration.before(new Date());</span>
+<span class="fc" id="L43">        Date expiration = extractClaim(token, Claims::getExpiration);</span>
+<span class="fc" id="L44">        return expiration.before(new Date());</span>
     }
 
     private &lt;T&gt; T extractClaim(String token, Function&lt;Claims, T&gt; claimsResolver) {
-<span class="nc" id="L48">        Claims claims = Jwts.parserBuilder()</span>
-<span class="nc" id="L49">                .setSigningKey(signingKey)</span>
-<span class="nc" id="L50">                .build()</span>
-<span class="nc" id="L51">                .parseClaimsJws(token)</span>
-<span class="nc" id="L52">                .getBody();</span>
-<span class="nc" id="L53">        return claimsResolver.apply(claims);</span>
+<span class="fc" id="L48">        Claims claims = Jwts.parserBuilder()</span>
+<span class="fc" id="L49">                .setSigningKey(signingKey)</span>
+<span class="fc" id="L50">                .build()</span>
+<span class="fc" id="L51">                .parseClaimsJws(token)</span>
+<span class="fc" id="L52">                .getBody();</span>
+<span class="fc" id="L53">        return claimsResolver.apply(claims);</span>
     }
 
     private String buildToken(Map&lt;String, Object&gt; extraClaims, String username) {
-<span class="nc" id="L57">        Date now = new Date();</span>
-<span class="nc" id="L58">        Date expiry = new Date(now.getTime() + expirationMs);</span>
+<span class="fc" id="L57">        Date now = new Date();</span>
+<span class="fc" id="L58">        Date expiry = new Date(now.getTime() + expirationMs);</span>
 
-<span class="nc" id="L60">        return Jwts.builder()</span>
-<span class="nc" id="L61">                .setClaims(extraClaims)</span>
-<span class="nc" id="L62">                .setSubject(username)</span>
-<span class="nc" id="L63">                .setIssuedAt(now)</span>
-<span class="nc" id="L64">                .setExpiration(expiry)</span>
-<span class="nc" id="L65">                .signWith(signingKey, SignatureAlgorithm.HS256)</span>
-<span class="nc" id="L66">                .compact();</span>
+<span class="fc" id="L60">        return Jwts.builder()</span>
+<span class="fc" id="L61">                .setClaims(extraClaims)</span>
+<span class="fc" id="L62">                .setSubject(username)</span>
+<span class="fc" id="L63">                .setIssuedAt(now)</span>
+<span class="fc" id="L64">                .setExpiration(expiry)</span>
+<span class="fc" id="L65">                .signWith(signingKey, SignatureAlgorithm.HS256)</span>
+<span class="fc" id="L66">                .compact();</span>
     }
 }
 

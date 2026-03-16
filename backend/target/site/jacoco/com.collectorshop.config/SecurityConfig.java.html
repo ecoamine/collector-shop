@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">collector-shop-backend</a> &gt; <a href="index.source.html" class="el_package">com.collectorshop.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.collectorshop.config;
 
 import com.collectorshop.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -21,48 +23,58 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
-<span class="nc" id="L24">public class SecurityConfig {</span>
+<span class="nc" id="L26">public class SecurityConfig {</span>
+
+    @Value(&quot;${app.cors.allowed-origin:http://localhost:5173}&quot;)
+    private String corsAllowedOrigin;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-<span class="nc" id="L29">        http</span>
-<span class="nc" id="L30">            .csrf(csrf -&gt; csrf.disable())</span>
-<span class="nc" id="L31">            .cors(cors -&gt; cors.configurationSource(corsConfigurationSource()))</span>
-<span class="nc" id="L32">            .sessionManagement(session -&gt; session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
-<span class="nc" id="L33">            .authorizeHttpRequests(auth -&gt; auth</span>
-<span class="nc" id="L34">                .requestMatchers(&quot;/actuator/health&quot;, &quot;/actuator/info&quot;).permitAll()</span>
-<span class="nc" id="L35">                .requestMatchers(&quot;/v3/api-docs/**&quot;, &quot;/swagger-ui/**&quot;, &quot;/swagger-ui.html&quot;).permitAll()</span>
-<span class="nc" id="L36">                .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
-<span class="nc" id="L37">                .requestMatchers(HttpMethod.GET, &quot;/api/items/**&quot;, &quot;/api/categories&quot;).permitAll()</span>
-<span class="nc" id="L38">                .anyRequest().authenticated()</span>
+<span class="nc" id="L34">        http</span>
+<span class="nc" id="L35">            .csrf(csrf -&gt; csrf.disable())</span>
+<span class="nc" id="L36">            .cors(cors -&gt; cors.configurationSource(corsConfigurationSource()))</span>
+<span class="nc" id="L37">            .headers(headers -&gt; headers</span>
+<span class="nc" id="L38">                .contentTypeOptions(cto -&gt; {})</span>
+<span class="nc" id="L39">                .frameOptions(fo -&gt; fo.deny())</span>
+<span class="nc" id="L40">                .referrerPolicy(rp -&gt; rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))</span>
+<span class="nc" id="L41">                .contentSecurityPolicy(csp -&gt; csp.policyDirectives(&quot;default-src 'none'; frame-ancestors 'none'&quot;))</span>
             )
-<span class="nc" id="L40">            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
+<span class="nc" id="L43">            .sessionManagement(session -&gt; session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="nc" id="L44">            .authorizeHttpRequests(auth -&gt; auth</span>
+                // Monitoring : accès public sans auth (Prometheus scrape, health checks)
+<span class="nc" id="L46">                .requestMatchers(&quot;/actuator/health&quot;, &quot;/actuator/health/**&quot;, &quot;/actuator/prometheus&quot;).permitAll()</span>
+<span class="nc" id="L47">                .requestMatchers(&quot;/v3/api-docs/**&quot;, &quot;/swagger-ui/**&quot;, &quot;/swagger-ui.html&quot;).permitAll()</span>
+<span class="nc" id="L48">                .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="nc" id="L49">                .requestMatchers(HttpMethod.GET, &quot;/api/items/**&quot;, &quot;/api/categories&quot;).permitAll()</span>
+<span class="nc" id="L50">                .anyRequest().authenticated()</span>
+            )
+<span class="nc" id="L52">            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
 
-<span class="nc" id="L42">        return http.build();</span>
+<span class="nc" id="L54">        return http.build();</span>
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-<span class="nc" id="L47">        return new BCryptPasswordEncoder();</span>
+<span class="nc" id="L59">        return new BCryptPasswordEncoder();</span>
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-<span class="nc" id="L52">        return configuration.getAuthenticationManager();</span>
+<span class="nc" id="L64">        return configuration.getAuthenticationManager();</span>
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-<span class="nc" id="L57">        CorsConfiguration configuration = new CorsConfiguration();</span>
-<span class="nc" id="L58">        configuration.setAllowedOrigins(List.of(&quot;http://localhost:5173&quot;));</span>
-<span class="nc" id="L59">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
-<span class="nc" id="L60">        configuration.setAllowedHeaders(List.of(&quot;*&quot;));</span>
-<span class="nc" id="L61">        configuration.setAllowCredentials(true);</span>
+<span class="nc" id="L69">        CorsConfiguration configuration = new CorsConfiguration();</span>
+<span class="nc" id="L70">        configuration.setAllowedOrigins(List.of(corsAllowedOrigin));</span>
+<span class="nc" id="L71">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="nc" id="L72">        configuration.setAllowedHeaders(List.of(&quot;*&quot;));</span>
+<span class="nc" id="L73">        configuration.setAllowCredentials(true);</span>
 
-<span class="nc" id="L63">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
-<span class="nc" id="L64">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
-<span class="nc" id="L65">        return source;</span>
+<span class="nc" id="L75">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="nc" id="L76">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
+<span class="nc" id="L77">        return source;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

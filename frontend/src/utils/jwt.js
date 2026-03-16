@@ -15,9 +15,15 @@ export function decodeJwtPayload(token) {
   }
 }
 
+/** Normalize role: "ROLE_SELLER" -> "SELLER", "SELLER" -> "SELLER". */
+export function normalizeRole(role) {
+  if (!role || typeof role !== 'string') return null;
+  const r = role.replace(/^ROLE_/, '');
+  if (r === 'BUYER' || r === 'SELLER' || r === 'ADMIN') return r;
+  return null;
+}
+
 export function getRoleFromToken(token) {
   const payload = decodeJwtPayload(token);
-  const role = payload?.role;
-  if (role === 'BUYER' || role === 'SELLER' || role === 'ADMIN') return role;
-  return null;
+  return normalizeRole(payload?.role);
 }

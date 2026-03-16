@@ -57,8 +57,8 @@ public class ItemService {
                 .category(category)
                 .build();
 
-        ItemListing saved = itemListingRepository.save(item);
-        return ItemListingMapper.toResponse(saved);
+        ItemListing saved = itemListingRepository.saveAndFlush(item);
+        return ItemListingMapper.toResponse(saved, category);
     }
 }
 

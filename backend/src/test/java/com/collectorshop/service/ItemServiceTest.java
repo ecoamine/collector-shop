@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,6 +74,25 @@ class ItemServiceTest {
     }
 
     @Test
+    void getItemById_whenFound_returnsDto() {
+        ItemListing item = ItemListing.builder()
+                .id(1L)
+                .title("Item")
+                .price(BigDecimal.ONE)
+                .sellerId(10L)
+                .createdAt(OffsetDateTime.now())
+                .category(category)
+                .build();
+        when(itemListingRepository.findById(1L)).thenReturn(Optional.of(item));
+
+        ItemListingResponse result = itemService.getItemById(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getTitle()).isEqualTo("Item");
+    }
+
+    @Test
     void createItemForSeller_persistsNewItem() {
         User seller = User.builder()
                 .id(10L)
@@ -82,7 +102,7 @@ class ItemServiceTest {
 
         when(userRepository.findByUsername("seller")).thenReturn(Optional.of(seller));
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
-        when(itemListingRepository.save(any(ItemListing.class)))
+        when(itemListingRepository.saveAndFlush(any(ItemListing.class)))
                 .thenAnswer(invocation -> {
                     ItemListing toSave = invocation.getArgument(0);
                     toSave.setId(123L);

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/apiClient.js';
 import { saveAuth } from '../hooks/useAuth.js';
+import { getRoleFromToken, normalizeRole } from '../utils/jwt.js';
 import { Card, CardContent } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -25,7 +26,9 @@ export default function Register() {
       });
       const token = response.data?.token;
       if (token) {
-        saveAuth({ token, role });
+        const roleFromApi = response.data?.role;
+        const savedRole = normalizeRole(roleFromApi) ?? getRoleFromToken(token) ?? role;
+        saveAuth({ token, role: savedRole });
         window.location.href = '/';
       } else {
         setError('Registration failed');

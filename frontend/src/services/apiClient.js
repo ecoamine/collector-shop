@@ -14,6 +14,10 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Force application/json sans charset pour éviter 415 (backend strict sur Content-Type)
+  if (config.data != null && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
   return config;
 });
 

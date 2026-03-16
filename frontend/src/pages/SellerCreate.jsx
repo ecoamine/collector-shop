@@ -21,14 +21,23 @@ export default function SellerCreate() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!categoryId || Number(categoryId) <= 0) {
+      toast.error('Please select a category');
+      return;
+    }
+    const priceNum = Number(price);
+    if (Number.isNaN(priceNum) || priceNum <= 0) {
+      toast.error('Please enter a valid price');
+      return;
+    }
     setLoading(true);
     try {
       await api.post('/api/seller/items', {
-        title,
-        description,
-        price: Number(price),
-        imageUrl: imageUrl || undefined,
-        categoryId: categoryId ? Number(categoryId) : undefined,
+        title: title.trim(),
+        description: description?.trim() || null,
+        price: priceNum,
+        imageUrl: imageUrl?.trim() || null,
+        categoryId: Number(categoryId),
       });
       toast.success('Item created');
       setTitle('');

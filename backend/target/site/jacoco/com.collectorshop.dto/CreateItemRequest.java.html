@@ -4,6 +4,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-<span class="fc" id="L14">public class CreateItemRequest {</span>
+<span class="fc" id="L15">public class CreateItemRequest {</span>
 
     @NotBlank
     @Size(max = 200)
@@ -22,7 +23,17 @@ import java.math.BigDecimal;
 
     @NotNull
     @DecimalMin(value = &quot;0.0&quot;, inclusive = false)
+    @Setter(AccessLevel.NONE)
     private BigDecimal price;
+
+    /** Accepte Number (JSON number) ou BigDecimal pour compatibilité frontend et Jackson. */
+    public void setPrice(BigDecimal price) {
+<span class="fc" id="L31">        this.price = price;</span>
+<span class="fc" id="L32">    }</span>
+
+    public void setPrice(Number price) {
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        this.price = price == null ? null : BigDecimal.valueOf(price.doubleValue());</span>
+<span class="nc" id="L36">    }</span>
 
     @Size(max = 500)
     private String imageUrl;

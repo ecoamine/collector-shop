@@ -53,6 +53,29 @@ class CategoryServiceTest {
     }
 
     @Test
+    void createCategory_success_returnsDto() {
+        CreateCategoryRequest request = new CreateCategoryRequest();
+        request.setName("NewCat");
+        when(categoryRepository.findByName("NewCat")).thenReturn(Optional.empty());
+        Category saved = Category.builder().id(10L).name("NewCat").build();
+        when(categoryRepository.save(any(Category.class))).thenReturn(saved);
+
+        CategoryDto result = categoryService.createCategory(request);
+
+        assertThat(result.getId()).isEqualTo(10L);
+        assertThat(result.getName()).isEqualTo("NewCat");
+        verify(categoryRepository).flush();
+    }
+
+    @Test
+    void createCategory_whenNameEmpty_throws() {
+        CreateCategoryRequest request = new CreateCategoryRequest();
+        request.setName("   ");
+
+        assertThrows(IllegalArgumentException.class, () -> categoryService.createCategory(request));
+    }
+
+    @Test
     void deleteCategory_whenMissing_throwsNotFound() {
         when(categoryRepository.existsById(99L)).thenReturn(false);
 

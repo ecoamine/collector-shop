@@ -45,9 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 <span class="nc" id="L45">            UserDetails userDetails = userDetailsService.loadUserByUsername(username);</span>
 <span class="nc bnc" id="L46" title="All 2 branches missed.">            if (jwtService.isTokenValid(token, userDetails)) {</span>
 <span class="nc" id="L47">                UsernamePasswordAuthenticationToken authenticationToken =</span>
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
+<span class="nc" id="L48">                        new UsernamePasswordAuthenticationToken(</span>
+<span class="nc" id="L49">                                userDetails,</span>
+<span class="nc" id="L50">                                null,</span>
 <span class="nc" id="L51">                                userDetails.getAuthorities()</span>
                         );
 <span class="nc" id="L53">                authenticationToken.setDetails(</span>

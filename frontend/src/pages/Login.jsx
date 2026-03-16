@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/apiClient.js';
 import { saveAuth } from '../hooks/useAuth.js';
-import { getRoleFromToken } from '../utils/jwt.js';
+import { getRoleFromToken, normalizeRole } from '../utils/jwt.js';
 import { Card, CardContent } from '../components/ui/Card.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -21,7 +21,8 @@ export default function Login() {
       const response = await api.post('/api/auth/login', { username, password });
       const token = response.data?.token;
       if (token) {
-        const role = getRoleFromToken(token);
+        const roleFromApi = response.data?.role;
+        const role = normalizeRole(roleFromApi) ?? getRoleFromToken(token);
         saveAuth({ token, role });
         window.location.href = '/';
       } else {
